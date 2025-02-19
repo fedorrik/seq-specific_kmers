@@ -15,7 +15,7 @@ with pd.ExcelWriter(xlsx_file_path, engine='xlsxwriter') as writer:
         # Читаем данные из каждого файла .tsv в pandas DataFrame
         df = pd.read_csv(os.path.join(directory, file), sep='\t')
         # Используем имя файла (без расширения) в качестве имени листа в Excel
-        sheet_name = os.path.splitext(file)[0]
+        sheet_name = os.path.splitext(file)[0][:-6]
         # Записываем данные в Excel на отдельный лист
         df.to_excel(writer, sheet_name=sheet_name, index=False)
 

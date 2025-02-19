@@ -35,9 +35,11 @@ for kmer in query_kmers:
     if kmer_cnt < 30:
         continue
     kmer_counts = []
+    db_cenhaps = []
     threshold = kmer_cnt / 10
     for db_genome in db_kmers:
         db_cenhap = db_genome.split('_')[-1].split('.')[0] # HG02622.pat.cen12_[2]
+        db_cenhaps.append(db_cenhap)
         # no such kmer => write
         if kmer not in db_kmers[db_genome]:
             kmer_counts.append('0')
@@ -51,7 +53,7 @@ for kmer in query_kmers:
         else:
             break
     if len(kmer_counts) == len(db_kmers):
-        bg_sum = sum(map(int, kmer_counts))
+        bg_sum = sum([int(kmer_counts[i]) for i in range(len(kmer_counts)) if db_cenhaps[i] != query_cenhap])
         good_kmers.append([kmer, str(kmer_cnt), str(bg_sum), str(round(bg_sum / kmer_cnt, 2))] + kmer_counts)
 
 # sort
