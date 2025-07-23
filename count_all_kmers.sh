@@ -1,29 +1,70 @@
 #!/bin/bash
-# Usage: ./count_all_kmers.sh <dit_with_fastas> <kmer_length>
 
-# Config
+# Defaults
+REVERSE_COMPLEMENT=false
+SEQ_DIR=""
+KMER_LENGTH=21
+
+# Help
+usage() {
+    echo "Usage: $0 -d DIR [options]"
+    echo "  -d, --dir-with-fastas    Directory with input FASTA/FASTQ files (required)"
+    echo "  -k, --kmer-length LENGTH K-mer length (default: 21)"
+    echo "  -r, --reverse-complement Count canonical k-mers (treat reverse complements as same)"
+    echo "  -h, --help               Show this help message"
+}
+
+# Parse arguments
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -r|--reverse-complement) REVERSE_COMPLEMENT=true ;;
+        -d|--dir-with-fastas) SEQ_DIR="$2"; shift ;;
+        -k|--kmer-length) KMER_LENGTH="$2"; shift ;;
+        -h|--help) usage; exit 0 ;;
+        *) echo "Unknown parameter: $1"; usage; exit 1 ;;
+    esac
+    shift
+done
+
+# Check required arguments
+if [[ -z "$SEQ_DIR" ]]; then
+    echo "Error: --dir-with-fastas is required"
+    usage
+    exit 1
+fi
+
+# Set canonical flag
+CANONICAL_FLAG=""
+if $REVERSE_COMPLEMENT; then
+    CANONICAL_FLAG="--canonical"
+fi
+
+# Script directory
 script_dir="$(dirname "$(readlink -f "$0")")"
-seq_dir=$1
-# specify kmer length
-kmer_length=$2
 
-# create dirs
-mkdir -p "kmers_$kmer_length/kmers_db" "kmers_$kmer_length/kmers_specific_cnt"
+# Create output directories
+mkdir -p "kmers-${KMER_LENGTH}/kmers_db" "kmers-${KMER_LENGTH}"
 
-# count all kmers in sequences
+# Count k-mers
 echo "COUNT KMERS"
-for i in `ls $seq_dir/`; do
-  name=`echo $i | awk '{split($0, name, ":"); print name[1]}'`
-  echo "  $name"
-  jellyfish count -m $kmer_length -s 4M $seq_dir/$i -o $name.jf
-  jellyfish dump -ct $name.jf > kmers_$kmer_length/kmers_db/$name.kmers
-  rm $name.jf
+for fpath in "$SEQ_DIR"/*; do
+    fname=$(basename "$fpath")
+    name="${fname%%:*}"
+    echo "  $name"
+    jellyfish count -m "$KMER_LENGTH" -s 4M $CANONICAL_FLAG "$fpath" -o "$name.jf"
+    jellyfish dump -ct "$name.jf" > "kmers-${KMER_LENGTH}/kmers_db/${name}.kmers"
+    rm "$name.jf"
 done
 
-# get specific kmers for each sequence
+# Extract specific k-mers
 echo "GET SPECIFIC KMERS"
-for name in `ls "kmers_$kmer_length/kmers_db"`; do
-  echo "  $name"
-  python3 "$script_dir/get_specific_kmers.py" $name "kmers_$kmer_length/kmers_db/" > "kmers_$kmer_length/kmers_specific_cnt/$name.cnt"
+for kmers_file in "kmers-${KMER_LENGTH}/kmers_db/"*; do
+    name=$(basename "$kmers_file")
+    echo "  $name"
+    python3 "$script_dir/get_specific_kmers.py" "$name" "kmers-${KMER_LENGTH}/kmers_db/" > "kmers-${KMER_LENGTH}/${name}.cnt"
 done
+
+# Cleanup
+rm -r "kmers-${KMER_LENGTH}/kmers_db/"
+echo "K-mer counting completed"
 

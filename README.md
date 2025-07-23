@@ -10,10 +10,11 @@ Get cenhap specific kmers from the set of centromere assemblies
 - jellifish
 
 ### Run:
-- `./count_all_kmers.sh <seq_dir> <kmer_length>`
-- <seq_dir> must contain centromere sequences (full chromosomes are too long) with cenhap assignment at the and of name after "_"
+- `./count_all_kmers.sh --dir-with-fastas <seq_dir> --kmer-length <kmer_length>`
+- <seq_dir> must contain centromere sequences (full chromosomes are too long) with cenhap assignment at the and of name after "_". Sequnces with the same cenhap won't be used as negative control to each other. If there is no cenhap assignments (no "_"), all sequences would be a negative control to all.
 
 ### to_xlsx script:
 - collect all the cnt file from `kmers_specific_cnt` dir to one xlsx file
 - Requiers `openpyxl` and `xlsxwriter` pip libraries 
-- `python3 to_xlsx.py <path/to/kmers_specific_cnt> <output>.xlsx`
+- `python3 to_xlsx.py <path/to/kmer_counts> <output>.xlsx`
+
