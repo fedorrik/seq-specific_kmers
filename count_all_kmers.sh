@@ -49,7 +49,7 @@ mkdir -p "kmers-${KMER_LENGTH}/kmers_db" "kmers-${KMER_LENGTH}"
 echo "COUNT KMERS"
 for fpath in "$SEQ_DIR"/*; do
     fname=$(basename "$fpath")
-    name="${fname%%:*}"
+    name="${fname%.*}"
     echo "  $name"
     jellyfish count -m "$KMER_LENGTH" -s 4M $CANONICAL_FLAG "$fpath" -o "$name.jf"
     jellyfish dump -ct "$name.jf" > "kmers-${KMER_LENGTH}/kmers_db/${name}.kmers"
