@@ -11,6 +11,7 @@ usage() {
     echo "  -d, --dir-with-fastas    Directory with input FASTA/FASTQ files (required)"
     echo "  -k, --kmer-length LENGTH K-mer length (default: 21)"
     echo "  -r, --reverse-complement Count canonical k-mers (treat reverse complements as same)"
+    echo "  -ht, --hard-threshold    Apply hard threshold filter"
     echo "  -h, --help               Show this help message"
 }
 
@@ -20,6 +21,7 @@ while [[ "$#" -gt 0 ]]; do
         -r|--reverse-complement) REVERSE_COMPLEMENT=true ;;
         -d|--dir-with-fastas) SEQ_DIR="$2"; shift ;;
         -k|--kmer-length) KMER_LENGTH="$2"; shift ;;
+        -ht|--hard-threshold) HARD_THRESHOLD=true ;;
         -h|--help) usage; exit 0 ;;
         *) echo "Unknown parameter: $1"; usage; exit 1 ;;
     esac
@@ -61,10 +63,12 @@ echo "GET SPECIFIC KMERS"
 for kmers_file in "kmers-${KMER_LENGTH}/kmers_db/"*; do
     name=$(basename "$kmers_file")
     echo "  $name"
-    python3 "$script_dir/get_specific_kmers.py" "$name" "kmers-${KMER_LENGTH}/kmers_db/" > "kmers-${KMER_LENGTH}/${name}.cnt"
+    if $HARD_THRESHOLD; then
+        python3 "$script_dir/get_specific_kmers.py" --name "$name" --kmer-db_dir "kmers-${KMER_LENGTH}/kmers_db/" --hard_threshold > "kmers-${KMER_LENGTH}/${name}.cnt"
+    else
+        python3 "$script_dir/get_specific_kmers.py" --name "$name" --kmer-db_dir "kmers-${KMER_LENGTH}/kmers_db/" > "kmers-${KMER_LENGTH}/${name}.cnt"
 done
 
 # Cleanup
 rm -r "kmers-${KMER_LENGTH}/kmers_db/"
 echo "K-mer counting completed"
-
