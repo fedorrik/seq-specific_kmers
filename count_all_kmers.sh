@@ -16,6 +16,8 @@ usage() {
 }
 
 # Parse arguments
+REVERSE_COMPLEMENT=false
+HARD_THRESHOLD=false
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         -r|--reverse-complement) REVERSE_COMPLEMENT=true ;;
@@ -27,6 +29,11 @@ while [[ "$#" -gt 0 ]]; do
     esac
     shift
 done
+
+echo "K-mer length: $KMER_LENGTH"
+echo "Reverse complement: $REVERSE_COMPLEMENT"
+echo "Hard threshold: $HARD_THRESHOLD"
+
 
 # Check required arguments
 if [[ -z "$SEQ_DIR" ]]; then
@@ -67,6 +74,7 @@ for kmers_file in "kmers-${KMER_LENGTH}/kmers_db/"*; do
         python3 "$script_dir/get_specific_kmers.py" --name "$name" --kmer-db_dir "kmers-${KMER_LENGTH}/kmers_db/" --hard_threshold > "kmers-${KMER_LENGTH}/${name}.cnt"
     else
         python3 "$script_dir/get_specific_kmers.py" --name "$name" --kmer-db_dir "kmers-${KMER_LENGTH}/kmers_db/" > "kmers-${KMER_LENGTH}/${name}.cnt"
+    fi
 done
 
 # Cleanup
