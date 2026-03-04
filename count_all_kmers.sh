@@ -11,7 +11,7 @@ usage() {
     echo "  -d, --dir-with-fastas    Directory with input FASTA/FASTQ files (required)"
     echo "  -k, --kmer-length LENGTH K-mer length (default: 21)"
     echo "  -r, --reverse-complement Count canonical k-mers (treat reverse complements as same)"
-    echo "  -ht, --hard-threshold    Apply hard threshold filter"
+    echo "  -ht, --hard-threshold    Apply hard threshold filter (default: soft-threshold)"
     echo "  -h, --help               Show this help message"
 }
 
